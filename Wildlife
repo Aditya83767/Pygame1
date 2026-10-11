@@ -1,0 +1,34 @@
+import pygame
+
+pygame.init()
+
+screen = pygame.display.set_mode((500, 500))
+pygame.display.set_caption("Wildlife Spotlight: Tiger")
+
+clock = pygame.time.Clock()
+
+tiger = pygame.image.load("tiger.jpg")
+tiger = pygame.transform.scale(tiger, (300, 300))
+
+font = pygame.font.SysFont(None, 30)
+fact_font = pygame.font.SysFont(None, 22)
+
+heading = font.render("Wildlife Spotlight: Tiger", True, (255, 255, 255))
+fact = fact_font.render("Tigers are the largest wild cats.", True, (255, 255, 255))
+
+running = True
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    screen.fill((0, 100, 0))
+    screen.blit(heading, (50, 20))
+    screen.blit(tiger, (100, 70))
+    screen.blit(fact, (45, 400))
+
+    pygame.display.flip()
+    clock.tick(30)
+
+pygame.quit()
