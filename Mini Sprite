@@ -1,0 +1,42 @@
+import pygame
+pygame.init()
+
+screen = pygame.display.set_mode((500, 500))
+clock = pygame.time.Clock()
+
+class Sprite:
+    def __init__(self):
+        self.rect = pygame.Rect(200, 200, 40, 40)
+        self.color = (0, 255, 0)
+
+    def move(self, keys):
+        if keys[pygame.K_LEFT]: self.rect.x -= 5
+        if keys[pygame.K_RIGHT]: self.rect.x += 5
+        if keys[pygame.K_UP]: self.rect.y -= 5
+        if keys[pygame.K_DOWN]: self.rect.y += 5
+
+        self.rect.clamp_ip(screen.get_rect())
+        self.color = (255, 0, 0) if self.rect.left == 0 or self.rect.right == 500 or self.rect.top == 0 or self.rect.bottom == 500 else (0, 255, 0)
+
+    def draw(self):
+        pygame.draw.rect(screen, self.color, self.rect)
+
+sprite = Sprite()
+running = True
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    sprite.move(pygame.key.get_pressed())
+    screen.fill((0, 0, 0))
+
+    pygame.draw.circle(screen, (255, 255, 255), (100, 100), 25)
+    pygame.draw.circle(screen, (255, 255, 255), (300, 100), 25, 2)
+    sprite.draw()
+
+    pygame.display.flip()
+    clock.tick(30)
+
+pygame.quit()
