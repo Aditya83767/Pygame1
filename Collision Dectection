@@ -1,0 +1,51 @@
+import pygame
+
+pygame.init()
+
+screen = pygame.display.set_mode((500, 400))
+pygame.display.set_caption("Collision Detection")
+
+PINK = (100, 0, 100)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+
+player = pygame.Rect(50, 50, 50, 50)
+enemy = pygame.Rect(300, 200, 50, 50)
+enemy_visible = True
+
+font = pygame.font.Font(None, 50)
+running = True
+clock = pygame.time.Clock()
+
+while running:
+    screen.fill(PINK)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and player.left > 0:
+        player.x -= 5
+    if keys[pygame.K_RIGHT] and player.right < 500:
+        player.x += 5
+    if keys[pygame.K_UP] and player.top > 0:
+        player.y -= 5
+    if keys[pygame.K_DOWN] and player.bottom < 400:
+        player.y += 5
+
+    if enemy_visible and player.colliderect(enemy):
+        enemy_visible = False
+
+    pygame.draw.rect(screen, GREEN, player)
+
+    if enemy_visible:
+        pygame.draw.rect(screen, RED, enemy)
+    else:
+        text = font.render("Enemy Found!!", True, RED)
+        screen.blit(text, (120, 20))
+
+    pygame.display.update()
+    clock.tick(60)
+
+pygame.quit()
