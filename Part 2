@@ -1,0 +1,131 @@
+import math
+import random
+import pygame
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 500
+PLAYER_START_X = 370
+PLAYER_START_Y = 380
+ENEMY_START_Y_MIN = 50
+ENEMY_START_Y_MAX = 150
+ENEMY_SPEED_X = 4
+ENEMY_SPEED_Y = 40
+BULLET_SPEED_Y = 10
+COLLISION_DISTANCE = 27
+NUM_OF_ENEMIES = 6
+
+pygame.init()
+
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Space Invader")
+clock = pygame.time.Clock()
+
+background = pygame.image.load("space image.png")
+player_img = pygame.image.load("Player.png")
+enemy_img = pygame.image.load("enemy.png")
+bullet_img = pygame.image.load("bullet.png")
+
+player_x = PLAYER_START_X
+player_y = PLAYER_START_Y
+player_x_change = 0
+
+enemy_x = [random.randint(0, SCREEN_WIDTH - 64) for _ in range(NUM_OF_ENEMIES)]
+enemy_y = [
+    random.randint(ENEMY_START_Y_MIN, ENEMY_START_Y_MAX)
+    for _ in range(NUM_OF_ENEMIES)
+]
+enemy_x_change = [ENEMY_SPEED_X] * NUM_OF_ENEMIES
+enemy_y_change = [ENEMY_SPEED_Y] * NUM_OF_ENEMIES
+
+bullet_x = 0
+bullet_y = PLAYER_START_Y
+bullet_state = "ready"
+
+score_value = 0
+font = pygame.font.Font(None, 32)
+over_font = pygame.font.Font(None, 64)
+
+
+def show_score():
+    score = font.render(f"Score: {score_value}", True, (255, 255, 255))
+    screen.blit(score, (10, 10))
+
+
+def game_over_text():
+    text = over_font.render("Game Over", True, (255, 255, 255))
+    screen.blit(text, (200, 250))
+
+
+def is_collision(enemy_x, enemy_y, bullet_x, bullet_y):
+    distance = math.hypot(enemy_x - bullet_x, enemy_y - bullet_y)
+    return distance < COLLISION_DISTANCE
+
+
+running = True
+game_over = False
+
+while running:
+    screen.blit(background, (0, 0))
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                player_x_change = -5
+            elif event.key == pygame.K_RIGHT:
+                player_x_change = 5
+            elif event.key == pygame.K_SPACE and bullet_state == "ready":
+                bullet_x = player_x
+                bullet_y = player_y
+                bullet_state = "fire"
+
+        if event.type == pygame.KEYUP and event.key in (
+            pygame.K_LEFT,
+            pygame.K_RIGHT,
+        ):
+            player_x_change = 0
+
+    if not game_over:
+        player_x = max(0, min(player_x + player_x_change, SCREEN_WIDTH - 64))
+
+        for i in range(NUM_OF_ENEMIES):
+            enemy_x[i] += enemy_x_change[i]
+
+            if enemy_x[i] <= 0 or enemy_x[i] >= SCREEN_WIDTH - 64:
+                enemy_x_change[i] *= -1
+                enemy_y[i] += enemy_y_change[i]
+
+            if enemy_y[i] > 340:
+                game_over = True
+
+            if bullet_state == "fire" and is_collision(
+                enemy_x[i], enemy_y[i], bullet_x, bullet_y
+            ):
+                bullet_state = "ready"
+                bullet_y = PLAYER_START_Y
+                score_value += 1
+                enemy_x[i] = random.randint(0, SCREEN_WIDTH - 64)
+                enemy_y[i] = random.randint(
+                    ENEMY_START_Y_MIN, ENEMY_START_Y_MAX
+                )
+
+            screen.blit(enemy_img, (enemy_x[i], enemy_y[i]))
+
+        if bullet_state == "fire":
+            screen.blit(bullet_img, (bullet_x + 16, bullet_y + 10))
+            bullet_y -= BULLET_SPEED_Y
+            if bullet_y <= 0:
+                bullet_state = "ready"
+                bullet_y = PLAYER_START_Y
+
+        screen.blit(player_img, (player_x, player_y))
+        show_score()
+    else:
+        game_over_text()
+
+    pygame.display.update()
+    clock.tick(60)
+
+pygame.quit()
